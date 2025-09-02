@@ -28,6 +28,13 @@ const GuruOnboarding: React.FC<GuruOnboardingProps> = ({ onComplete }) => {
   });
   const [isCreating, setIsCreating] = useState(false);
 
+  // Reset onboarding state when component mounts or restarts
+  React.useEffect(() => {
+    setCurrentStep(0);
+    setFormData({ name: "", subject: "", description: "" });
+    setIsCreating(false);
+  }, []);
+
   const steps = [
     {
       id: 'welcome',

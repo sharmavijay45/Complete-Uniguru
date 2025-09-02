@@ -678,10 +678,12 @@ const ChatContainer: React.FC = () => {
                   Create Guru
                 </button>
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('restart-guru-onboarding'));
+                  }}
                   className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 text-white text-sm font-medium"
                 >
-                  Go to Home
+                  How to Guru?
                 </button>
               </div>
             </div>

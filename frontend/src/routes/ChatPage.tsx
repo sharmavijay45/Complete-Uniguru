@@ -50,6 +50,23 @@ const ChatPage: React.FC<ChatPageProps> = ({ onCreateNewChat, isCreatingChat }) 
     }
   }, [gurus.length, showOnboarding]);
 
+  // Listen for onboarding restart event
+  useEffect(() => {
+    const handleRestartOnboarding = () => {
+      try {
+        localStorage.setItem('guruOnboardingDismissed', 'false');
+      } catch {
+        // Ignore localStorage errors
+      }
+      setShowOnboarding(true);
+    };
+
+    window.addEventListener('restart-guru-onboarding', handleRestartOnboarding);
+    return () => {
+      window.removeEventListener('restart-guru-onboarding', handleRestartOnboarding);
+    };
+  }, []);
+
   const handleOnboardingComplete = () => {
     setShowOnboarding(false);
   };
