@@ -732,16 +732,17 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onCreateNewChat, isCreatingCh
                     </button>
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <BubblyButton
-                    onClick={() => setShowCreateForm(!showCreateForm)}
-                    variant="primary"
-                    className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 font-medium text-sm ${showOnboarding && gurus.length === 0 && !showCreateForm ? 'ring-2 ring-purple-400 shadow-purple-500/30 shadow-lg' : ''}`}
-                  >
-                  
-                    <span>Create Guru</span>
-                  </BubblyButton>
-                </div>
+                {!showCreateForm && (
+                  <div className="flex gap-2">
+                    <BubblyButton
+                      onClick={() => setShowCreateForm(true)}
+                      variant="primary"
+                      className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 font-medium text-sm ${showOnboarding && gurus.length === 0 ? 'ring-2 ring-purple-400 shadow-purple-500/30 shadow-lg' : ''}`}
+                    >
+                      <span>Create Guru</span>
+                    </BubblyButton>
+                  </div>
+                )}
 
                 {/* Create New Guru Form */}
                 {showCreateForm && (
@@ -929,7 +930,7 @@ const LeftSidebar: React.FC<LeftSidebarProps> = ({ onCreateNewChat, isCreatingCh
                 )}
 
                 {/* Gurus List */}
-                <div className="flex flex-col flex-1 min-h-0">
+                <div className={`flex flex-col ${showCreateForm ? 'flex-shrink-0' : 'flex-1'} min-h-0`}>
                   <button
                     onClick={toggleGuruList}
                     className="flex items-center justify-between w-full text-left mb-3 text-purple-300 hover:text-white transition-all duration-200 ease-out py-2 px-2 rounded-lg hover:bg-purple-500/10 group"
