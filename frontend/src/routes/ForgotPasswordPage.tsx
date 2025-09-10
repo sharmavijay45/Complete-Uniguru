@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-hot-toast";
 import StarsCanvas from "../components/StarBackground";
+import Navbar from "../components/Navbar";
+import BHI from "../assets/blackhole-logo.png";
 import AuthCard from "../components/AuthCard";
 import AuthInput from "../components/AuthInput";
 import AuthButton from "../components/AuthButton";
@@ -64,11 +64,12 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-h-screen">
       {/* Star Background */}
       <div className="fixed inset-0 z-0">
         <StarsCanvas />
       </div>
+
 
       {/* Forgot Password Container */}
       <div className="relative z-10">
@@ -167,6 +168,11 @@ const ForgotPasswordPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer with blackhole logo - Hidden on mobile */}
+      <footer className="absolute bottom-5 right-5 z-10 hidden sm:block">
+        <img src={BHI} alt="BHI Logo" className="h-12" />
+      </footer>
     </div>
   );
 };

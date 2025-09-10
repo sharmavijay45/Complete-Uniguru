@@ -1,26 +1,27 @@
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Loginbox from "../components/Loginbox";
 import StarsCanvas from "../components/StarBackground";
+import Navbar from "../components/Navbar";
+import BHI from "../assets/blackhole-logo.png";
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
-
-  const handleLoginSuccess = () => {
-    // AuthContext will handle the login state, no need for localStorage
-    navigate("/chatpage", { replace: true });
-  };
-
   return (
-    <div className="relative">
+    <div className="relative min-h-screen">
       {/* Star Background */}
       <div className="fixed inset-0 z-0">
         <StarsCanvas />
       </div>
 
+      {/* Navbar with Logo */}
+      <Navbar
+        onLogout={() => {}}
+        isChatStarted={false}
+      />
+
       {/* Login Container */}
       <div className="relative z-10">
-        <Loginbox onLoginSuccess={handleLoginSuccess} />
+        <Loginbox onLoginSuccess={() => {}} />
       </div>
 
       {/* Additional Links */}
@@ -53,6 +54,11 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Footer with blackhole logo - Hidden on mobile */}
+      <footer className="absolute bottom-5 right-5 z-10 hidden sm:block">
+        <img src={BHI} alt="BHI Logo" className="h-12" />
+      </footer>
     </div>
   );
 };

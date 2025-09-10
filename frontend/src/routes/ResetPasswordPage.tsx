@@ -131,6 +131,7 @@ const ResetPasswordPage: React.FC = () => {
         <StarsCanvas />
       </div>
 
+
       {/* Reset Password Container */}
       <div className="relative z-10 flex items-center justify-center min-h-screen" style={{ minHeight: '100dvh' }}>
         <AuthCard title="Reset Password">

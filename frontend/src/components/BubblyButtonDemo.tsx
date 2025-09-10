@@ -5,8 +5,9 @@ import { faHeart, faDownload, faTrash, faExclamationTriangle, faCheck } from '@f
 
 const BubblyButtonDemo: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-900 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="relative">
+      {/* Demo Container */}
+      <div className="relative z-10 max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-white text-center mb-8">
           Bubbly Button Showcase
         </h1>
