@@ -57,7 +57,14 @@ const SignupPage: React.FC = () => {
 
       {/* Footer with blackhole logo - Hidden on mobile */}
       <footer className="absolute bottom-5 right-5 z-10 hidden sm:block">
-        <img src={BHI} alt="BHI Logo" className="h-12" />
+        <a 
+          href="https://blackholeinfiverse.com/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="block hover:scale-105 transition-transform duration-200"
+        >
+          <img src={BHI} alt="BHI Logo" className="h-12" />
+        </a>
       </footer>
     </div>
   );
