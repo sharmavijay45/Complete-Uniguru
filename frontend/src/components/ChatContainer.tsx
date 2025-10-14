@@ -9,7 +9,7 @@ import guruLogo from "../assets/guru.png";
 
 import EnhancedChatInput from "./EnhancedChatInput";
 import LoadingSpinner from "./LoadingSpinner";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { useChat } from "../context/ChatContext";
@@ -46,7 +46,7 @@ const ChatContainer: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {

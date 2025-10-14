@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import StarsCanvas from "../components/StarBackground";
-import Navbar from "../components/Navbar";
+// import Navbar from "../components/Navbar";
+import toast from "react-hot-toast";
+import axios from "axios";
 import BHI from "../assets/blackhole-logo.png";
 import AuthCard from "../components/AuthCard";
 import AuthInput from "../components/AuthInput";
@@ -47,7 +49,7 @@ const ForgotPasswordPage: React.FC = () => {
         id: "forgot-password"
       });
       setIsSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Forgot password failed:", error);
       if (axios.isAxiosError(error)) {
         const errorMessage = error.response?.data?.message || "Failed to send reset email. Please try again.";

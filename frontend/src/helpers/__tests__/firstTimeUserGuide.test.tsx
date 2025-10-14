@@ -7,4 +7,4 @@ import { showFirstTimeUserWelcome, showFirstGuruCreatedMessage, FirstTimeUserFor
 console.log("FirstTimeUserGuide imports successfully");
 
 // Export for potential future use
-export { showFirstTimeUserWelcome, showFirstGuruCreatedMessage, FirstTimeUserFormGuide, FirstTimeUserWelcomeModal };);
+export { showFirstTimeUserWelcome, showFirstGuruCreatedMessage, FirstTimeUserFormGuide, FirstTimeUserWelcomeModal };
