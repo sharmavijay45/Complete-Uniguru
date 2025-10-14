@@ -513,7 +513,9 @@ const ChatContainer: React.FC = () => {
       {/* Chat messages */}
       <div
         ref={messagesContainerRef}
-        className="chat-messages-area flex-1 w-full max-w-6xl flex flex-col gap-3 sm:gap-4 px-4 sm:px-8 py-2 chat-messages-container mx-auto"
+        className={`chat-messages-area flex-1 w-full max-w-6xl flex px-4 sm:px-8 py-2 chat-messages-container mx-auto ${
+          messages.length > 0 ? 'flex-col gap-3 sm:gap-4' : 'items-center justify-center lg:min-h-[60vh]'
+        }`}
         style={{
           minHeight: 0, // Important for flex-1 to work with overflow
           overflowY: 'auto',
@@ -630,21 +632,19 @@ const ChatContainer: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="flex items-center justify-center h-full px-4">
+          <>
             {!selectedGuru ? (
-              <div className="text-center">
-                <img src={guruLogo} alt="Guru" className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-gray-400 text-sm sm:text-base">Select a guru to start chatting!</p>
-                <p className="text-gray-500 text-xs sm:text-sm mt-2">Create a new guru or choose from your existing ones.</p>
-              </div>
+              <div></div>
             ) : (
               <div className="text-center">
-                <img src={guruLogo} alt="Guru" className="w-12 h-12 mx-auto mb-4" />
-                <p className="text-gray-400 text-sm sm:text-base">No messages yet. Start the conversation with {selectedGuru.name}!</p>
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-500/30 to-blue-500/30 rounded-full flex items-center justify-center border border-purple-400/20">
+                  <img src={guruLogo} alt="Guru" className="w-8 h-8" />
+                </div>
+                <p className="text-gray-400 text-sm sm:text-base">Ready to chat with {selectedGuru.name}!</p>
                 <p className="text-gray-500 text-xs sm:text-sm mt-2">Expert in: {selectedGuru.subject}</p>
               </div>
             )}
-          </div>
+          </>
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -670,22 +670,24 @@ const ChatContainer: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="chat-input-area flex-shrink-0 w-full pt-3 pb-4 bg-gradient-to-t from-black/20 to-transparent">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-8">
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg border border-white/10 p-4 sm:p-5 text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <img src={guruLogo} alt="Guru" className="w-6 h-6 opacity-70" />
-                <h4 className="text-white font-medium text-sm sm:text-base">No guru selected</h4>
+        <div className="chat-input-area flex-shrink-0 w-full pt-3 pb-4 fixed inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 pointer-events-auto">
+            <div className="bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl rounded-3xl border border-white/20 p-12 sm:p-16 text-center shadow-2xl shadow-black/20 transform hover:scale-105 transition-all duration-300">
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                  <img src={guruLogo} alt="Guru" className="w-7 h-7" />
+                </div>
+                <h4 className="text-white font-semibold text-lg sm:text-xl bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">No guru selected</h4>
               </div>
-              <p className="text-gray-300 text-xs sm:text-sm">
+              <p className="text-gray-300 text-sm sm:text-base mb-8 leading-relaxed">
                 Create or select a guru to start chatting.
               </p>
-              <div className="mt-3 flex flex-col xs:flex-row items-center justify-center gap-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent('open-guru-create'));
                   }}
-                  className="px-4 py-2 rounded-md bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-sm font-medium shadow-lg shadow-purple-500/20"
+                  className="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-purple-500 to-blue-600 hover:from-purple-500 hover:via-purple-400 hover:to-blue-500 text-white text-sm font-semibold shadow-xl shadow-purple-500/30 transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 border border-purple-400/30"
                 >
                   Create Guru
                 </button>
@@ -693,7 +695,7 @@ const ChatContainer: React.FC = () => {
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent('restart-guru-onboarding'));
                   }}
-                  className="px-4 py-2 rounded-md bg-white/10 hover:bg-white/15 border border-white/10 text-white text-sm font-medium"
+                  className="w-full sm:w-auto px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 text-white text-sm font-semibold backdrop-blur-sm transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 shadow-lg"
                 >
                   How to Guru?
                 </button>
