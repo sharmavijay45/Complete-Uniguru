@@ -17,6 +17,7 @@ import guruRoutes from './routes/guruRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import featureRoutes from './routes/featureRoutes.js';
+import ragRoutes from './routes/ragRoutes.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -109,26 +110,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Ollama test endpoint
-app.get('/test-ollama', async (req, res) => {
-  try {
-    const { testOllamaIntegration } = await import('./config/ollama.js');
-    const result = await testOllamaIntegration();
-    res.status(200).json({
-      status: result.success ? 'OK' : 'ERROR',
-      message: result.success ? 'Ollama integration working!' : 'Ollama integration failed',
-      result: result,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      message: 'Failed to test Ollama integration',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+
+// RAG endpoint
+app.use('/rag', ragRoutes);
 
 // API routes
 app.use('/api/v1/user', userRoutes);

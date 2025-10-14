@@ -1,6 +1,6 @@
 import Chat from '../models/Chat.js';
 import Guru from '../models/Guru.js';
-import { generateGroqResponse } from '../config/ollama.js';
+import { getRagAnswer } from '../config/rag.js';
 
 /**
  * @desc    Send new chat message
@@ -90,17 +90,34 @@ export const sendChatMessage = async (req, res) => {
     // Get recent messages for context (last 10 messages for better context)
     const recentMessages = chat.getRecentMessages(10);
 
-    // Generate AI response using Groq
-    const aiResponse = await generateGroqResponse(recentMessages, guru);
+    // Call RAG API to get answer
+    let ragResponse;
+    try {
+      ragResponse = await getRagAnswer(message.trim(), 5);
+    } catch (err) {
+      console.error('RAG API error:', err);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to get answer from RAG',
+        error: err.message || err.toString(),
+      });
+    }
 
-    // Add AI response to chat
-    await chat.addMessage('guru', aiResponse.content, aiResponse.metadata);
+    // Add bot message to chat
+    const botContent = ragResponse.groq_answer || 'Sorry, I could not find an answer.';
+    const botMetadata = {
+      retrieved_chunks: ragResponse.retrieved_chunks || [],
+    };
+    await chat.addMessage('guru', botContent, botMetadata);
 
     // Update guru stats
     await guru.updateStats(true);
 
     // Get updated chat with new messages
     const updatedChat = await Chat.findById(chat._id).populate('guru', 'name subject');
+
+    // Find the last bot message (should be the one just added)
+    const lastBotMsg = updatedChat.messages[updatedChat.messages.length - 1];
 
     res.status(200).json({
       success: true,
@@ -113,8 +130,8 @@ export const sendChatMessage = async (req, res) => {
         stats: updatedChat.stats
       },
       aiResponse: {
-        content: aiResponse.content,
-        metadata: aiResponse.metadata
+        content: lastBotMsg.content,
+        metadata: lastBotMsg.metadata || {},
       }
     });
   } catch (error) {
@@ -653,57 +670,7 @@ export const updateChatDetails = async (req, res) => {
     console.error('❌ Backend: Update chat error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
-    });
-  }
-};
-
-/**
- * @desc    Delete chat
- * @route   DELETE /api/v1/chat/chat/:chatId
- * @access  Private
- */
-export const deleteChatById = async (req, res) => {
-  try {
-    const { chatId } = req.params;
-    console.log(`🗑️ Backend: Attempting to delete chat ${chatId} for user ${req.user.id}`);
-
-    const chat = await Chat.findById(chatId);
-
-    if (!chat) {
-      console.log(`❌ Backend: Chat ${chatId} not found`);
-      return res.status(404).json({
-        success: false,
-        message: 'Chat not found'
-      });
-    }
-
-    console.log(`📋 Backend: Found chat ${chatId}, owner: ${chat.user}, requesting user: ${req.user.id}`);
-
-    // Check if user owns this chat
-    if (chat.user.toString() !== req.user.id) {
-      console.log(`🚫 Backend: User ${req.user.id} not authorized to delete chat ${chatId} (owner: ${chat.user})`);
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this chat'
-      });
-    }
-
-    console.log(`🔄 Backend: Deleting chat ${chatId} from database`);
-    await Chat.findByIdAndDelete(chatId);
-    console.log(`✅ Backend: Chat ${chatId} deleted successfully`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Chat deleted successfully'
-    });
-  } catch (error) {
-    console.error('❌ Backend: Delete chat error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Server error'
     });
   }
 };

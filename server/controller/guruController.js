@@ -1,6 +1,6 @@
 import Guru from '../models/Guru.js';
 import Chat from '../models/Chat.js';
-import { getAvailableModels, validateModelSettings } from '../config/ollama.js';
+// import { getAvailableModels, validateModelSettings } from '../config/ollama.js';
 
 /**
  * @desc    Get all user's gurus
@@ -213,7 +213,7 @@ export const updateGuru = async (req, res) => {
 
     // Validate and update settings
     if (req.body.settings) {
-      updateFields.settings = validateModelSettings(req.body.settings);
+  // No model settings for RAG-only mode
     }
 
     guru = await Guru.findByIdAndUpdate(req.params.id, updateFields, {
@@ -365,18 +365,9 @@ export const getChatWithGuru = async (req, res) => {
  * @access  Private
  */
 export const getAvailableAIModels = async (req, res) => {
-  try {
-    const models = getAvailableModels();
-
-    res.status(200).json({
-      success: true,
-      models
-    });
-  } catch (error) {
-    console.error('Get models error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
+  // No models in RAG-only mode
+  res.status(200).json({
+    success: true,
+    models: []
+  });
 };

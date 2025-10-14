@@ -11,7 +11,6 @@ import {
   getUserChats,
   getChatById,
   updateChatDetails,
-  deleteChatById,
   getAllChatsWithData
 } from '../controller/chatController.js';
 import { protect } from '../middleware/auth.js';
@@ -34,7 +33,7 @@ router.put('/:id', updateChat); // Update chat (legacy)
 router.put('/chat/:chatId', updateChatDetails); // Update chat details
 router.delete('/delete', deleteAllUserChats); // Delete all user chats
 router.delete('/:id', deleteChat); // Delete specific chat (legacy)
-router.delete('/chat/:chatId', deleteChatById); // Delete specific chat by ID
+// router.delete('/chat/:chatId', deleteChatById); // Delete specific chat by ID
 router.delete('/:id/messages', clearChatMessages); // Clear chat messages
 
 export default router;

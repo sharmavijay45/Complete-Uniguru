@@ -21,6 +21,7 @@ interface Message {
   sender: "user" | "bot";
   timestamp?: Date;
   isLoading?: boolean;
+  retrieved_chunks?: Array<{ file: string; content: string }>;
 }
 
 const ChatContainer: React.FC = () => {
@@ -176,7 +177,8 @@ const ChatContainer: React.FC = () => {
         const botMessage: Message = {
           text: response.aiResponse.content,
           sender: "bot",
-          timestamp: new Date()
+          timestamp: new Date(),
+          retrieved_chunks: response.aiResponse.metadata?.retrieved_chunks || []
         };
 
         // Replace loading message with actual response
@@ -606,7 +608,17 @@ const ChatContainer: React.FC = () => {
                     />
                   </div>
                 )}
-
+                {/* RAG Sources (retrieved_chunks) */}
+                {msg.sender === "bot" && !msg.isLoading && msg.retrieved_chunks && msg.retrieved_chunks.length > 0 && (
+                  <div className="mt-2 bg-blue-900/60 rounded-lg p-2 text-xs text-blue-100 border border-blue-400/30">
+                    <div className="font-semibold mb-1 text-blue-200">Sources:</div>
+                    {msg.retrieved_chunks.map((chunk, i) => (
+                      <div key={i} className="mb-1">
+                        <span className="font-bold">{chunk.file || "Unknown"}:</span> {chunk.content}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {msg.sender === "user" && (
                 <img
