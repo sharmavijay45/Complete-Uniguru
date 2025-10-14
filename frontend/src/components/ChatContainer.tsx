@@ -169,8 +169,24 @@ const ChatContainer: React.FC = () => {
     }
 
     try {
-      // Send message to backend with specific chat ID for proper isolation
-      const response = await sendChatRequest(fullMessage, selectedGuru.id, user.id, currentChatId || undefined);
+      // Prepare last 3 messages as context (excluding loading message)
+      const context = messages
+        .slice(-3)
+        .filter((msg) => !msg.isLoading)
+        .map((msg) => ({
+          sender: msg.sender,
+          content: msg.text,
+          timestamp: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
+        }));
+
+      // Send message to backend with context
+      const response = await sendChatRequest(
+        fullMessage,
+        selectedGuru.id,
+        user.id,
+        currentChatId || undefined,
+        context
+      );
 
       // Remove loading message and add AI response
       if (response.aiResponse) {

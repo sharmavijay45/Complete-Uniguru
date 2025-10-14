@@ -162,11 +162,18 @@ export const checkAuthStatus = async () => {
 };
 
 // Send Chat Request
+export interface ChatContextItem {
+  sender: string;
+  content: string;
+  timestamp: string;
+}
+
 export const sendChatRequest = async (
   message: string,
   chatbotId: string,
   userId: string,
-  chatId?: string
+  chatId?: string,
+  context?: ChatContextItem[]
 ) => {
   try {
     const response = await axios.post(`/chat/new`, {
@@ -174,6 +181,7 @@ export const sendChatRequest = async (
       chatbotId,
       userId,
       chatId, // Include chatId to specify which chat to send message to
+      context: context || []
     });
     return response.data; // Ensure this returns the necessary data for your component
   } catch (error) {

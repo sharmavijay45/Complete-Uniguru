@@ -9,7 +9,7 @@ import { getRagAnswer } from '../config/rag.js';
  */
 export const sendChatMessage = async (req, res) => {
   try {
-    const { message, chatbotId, userId, chatId } = req.body;
+  const { message, chatbotId, userId, chatId, context } = req.body;
 
     // Verify user owns this request
     if (userId !== req.user.id.toString()) {
@@ -90,10 +90,10 @@ export const sendChatMessage = async (req, res) => {
     // Get recent messages for context (last 10 messages for better context)
     const recentMessages = chat.getRecentMessages(10);
 
-    // Call RAG API to get answer
+    // Call RAG API to get answer, passing context if provided
     let ragResponse;
     try {
-      ragResponse = await getRagAnswer(message.trim(), 5);
+      ragResponse = await getRagAnswer(message.trim(), 5, context);
     } catch (err) {
       console.error('RAG API error:', err);
       return res.status(500).json({

@@ -30,17 +30,25 @@ if (!RAG_URL) {
  * Send a query to the RAG endpoint and return the response
  * @param {string} query - The user's question
  * @param {number} [top_k=5] - Number of top results to retrieve
+
+ * @param {string} query - The user's question
+ * @param {number} [top_k=5] - Number of top results to retrieve
+ * @param {Array} [context=[]] - Optional context array
  * @returns {Promise<object>} - RAG response (groq_answer, retrieved_chunks, etc)
  */
-export const getRagAnswer = async (query, top_k = 5) => {
+export const getRagAnswer = async (query, top_k = 5, context = []) => {
   try {
+    const body = { query, top_k };
+    if (Array.isArray(context) && context.length > 0) {
+      body.context = context;
+    }
     const response = await fetch(RAG_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'accept': 'application/json',
       },
-      body: JSON.stringify({ query, top_k }),
+      body: JSON.stringify(body),
     });
     if (!response.ok) {
       throw new Error(`RAG API error: ${response.status} ${response.statusText}`);
