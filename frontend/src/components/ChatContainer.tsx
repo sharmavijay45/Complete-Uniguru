@@ -2909,7 +2909,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy, faVolumeHigh, faPause, faPlay, faStop, faChartSimple ,faFolderOpen} from "@fortawesome/free-solid-svg-icons";
+import { faCopy, faVolumeHigh, faPause, faPlay, faStop ,faFolderOpen} from "@fortawesome/free-solid-svg-icons";
 import uniguru from "../assets/uni-logo.png";
 import userimage from "../assets/userimage.png";
 import guruLogo from "../assets/guru.png";
@@ -3550,22 +3550,22 @@ const ChatContainer: React.FC = () => {
                     style={{ fontSize: window.innerWidth < 640 ? '20px' : '24px' }}
                   />
                  <span className="text-teal-400 font-semibold text-sm ml-2 flex items-center">
-  Researched on {msg.retrieved_chunks.length} chunks
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="ml-1 h-4 w-4 text-teal-400"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    strokeWidth={2}
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
-    />
-  </svg>
-</span>    </div>
+                  Researched on {msg.retrieved_chunks.length} chunks
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="ml-1 h-4 w-4 text-teal-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+                    />
+                  </svg>
+                </span>    </div>
               )}
 
               </div>
