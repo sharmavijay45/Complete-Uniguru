@@ -17,10 +17,16 @@ const messageSchema = new mongoose.Schema({
     default: Date.now
   },
   metadata: {
-    model: String,
-    tokens: Number,
-    processingTime: Number,
-    error: String
+    model: { type: String },
+    tokens: { type: Number },
+    processingTime: { type: Number },
+    error: { type: String },
+    retrieved_chunks: [{
+      index: { type: Number },
+      file: { type: String },
+      score: { type: Number },
+      content: { type: String }
+    }]
   }
 }, {
   _id: true

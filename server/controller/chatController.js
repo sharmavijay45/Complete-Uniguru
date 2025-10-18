@@ -105,9 +105,14 @@ export const sendChatMessage = async (req, res) => {
 
     // Add bot message to chat
     const botContent = ragResponse.groq_answer || 'Sorry, I could not find an answer.';
+
+    // Save all fields from each chunk, not just file/content
     const botMetadata = {
-      retrieved_chunks: ragResponse.retrieved_chunks || [],
+      retrieved_chunks: Array.isArray(ragResponse.retrieved_chunks)
+        ? ragResponse.retrieved_chunks.map(chunk => ({ ...chunk }))
+        : [],
     };
+    console.log('[RAG DEBUG] Saving retrieved_chunks:', JSON.stringify(botMetadata.retrieved_chunks, null, 2));
     await chat.addMessage('guru', botContent, botMetadata);
 
     // Update guru stats
