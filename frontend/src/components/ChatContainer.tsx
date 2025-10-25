@@ -2909,7 +2909,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCopy, faVolumeHigh, faPause, faPlay, faStop ,faFolderOpen} from "@fortawesome/free-solid-svg-icons";
+import { faCopy, faVolumeHigh, faPause, faPlay, faStop ,faFolderOpen, faMusic, faDownload} from "@fortawesome/free-solid-svg-icons";
 import uniguru from "../assets/uni-logo.png";
 import userimage from "../assets/userimage.png";
 import guruLogo from "../assets/guru.png";
@@ -2929,6 +2929,10 @@ interface Message {
   timestamp?: Date;
   isLoading?: boolean;
   retrieved_chunks?: Array<{ index: number; file: string; score: number; content: string }>;
+  vaani_audio?: {
+    audio_url?: string;
+    error?: string;
+  };
 }
 
 interface FileAttachment {
@@ -2954,6 +2958,10 @@ const ChatContainer: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarChunks, setSidebarChunks] = useState<Array<{ index: number; file: string; score: number; content: string }>>([]);
   const [selectedChunk, setSelectedChunk] = useState<{ index: number; file: string; score: number; content: string } | null>(null);
+  // Audio state
+  const [playingAudioIndex, setPlayingAudioIndex] = useState<number | null>(null);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [vaaniToken, setVaaniToken] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -2976,8 +2984,44 @@ const ChatContainer: React.FC = () => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+      }
     };
-  }, []);
+  }, [audioElement]);
+
+  // Get Vaani authentication token
+  const getVaaniToken = async (): Promise<string | null> => {
+    if (vaaniToken) return vaaniToken;
+
+    try {
+      const response = await fetch('https://vaani-sentinel-gs6x.onrender.com/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'admin',
+          password: 'secret'
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.access_token || data.token;
+        if (token) {
+          setVaaniToken(token);
+          return token;
+        }
+      }
+      console.error('Failed to get Vaani token:', response.status);
+      return null;
+    } catch (error) {
+      console.error('Error getting Vaani token:', error);
+      return null;
+    }
+  };
 
   // Keyboard shortcuts for audio control
   useEffect(() => {
@@ -3095,7 +3139,8 @@ const ChatContainer: React.FC = () => {
         selectedGuru.id,
         user.id,
         currentChatId || undefined,
-        context
+        context,
+        true // Enable audio generation
       );
 
       console.log('[DEBUG] sendChatRequest response:', JSON.stringify(response, null, 2));
@@ -3112,7 +3157,8 @@ const ChatContainer: React.FC = () => {
                 score: chunk.score || 0,
                 content: chunk.content || ''
               }))
-            : []
+            : [],
+          vaani_audio: response.aiResponse.vaani_audio || null
         };
 
         console.log('[DEBUG] Bot message with chunks:', JSON.stringify(botMessage, null, 2));
@@ -3270,9 +3316,186 @@ const ChatContainer: React.FC = () => {
       setIsPlaying(false);
       setCurrentUtterance(null);
       setPlayingMessageIndex(null);
-      toast.success("Audio stopped", {
+    }
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+      setPlayingAudioIndex(null);
+      setAudioElement(null);
+    }
+    toast.success("Audio stopped", {
+      duration: 1000,
+      icon: '⏹️'
+    });
+  };
+
+  const handlePlayVaaniAudio = async (audioUrl: string, messageIndex: number) => {
+    if (playingAudioIndex === messageIndex) {
+      // If already playing this audio, pause it
+      if (audioElement) {
+        audioElement.pause();
+        setPlayingAudioIndex(null);
+        setAudioElement(null);
+        toast.success("Audio paused", {
+          duration: 1000,
+          icon: '⏸️'
+        });
+      }
+      return;
+    }
+
+    // Stop any existing audio
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    }
+
+    // Stop any TTS
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      setPlayingMessageIndex(null);
+    }
+
+    try {
+      let finalAudioUrl = audioUrl;
+
+      // If it's a relative URL from Vaani service, construct full URL
+      if (audioUrl.startsWith('/api/v1/agents/download-audio/')) {
+        finalAudioUrl = `https://vaani-sentinel-gs6x.onrender.com${audioUrl}`;
+      }
+
+      // If it's not a data URL, we need to fetch it and convert to base64
+      if (!finalAudioUrl.startsWith('data:')) {
+        toast.loading("Loading audio...", { id: "audio-loading" });
+
+        // Fetch the audio with authentication
+        const token = await getVaaniToken();
+        if (!token) {
+          throw new Error('Failed to get Vaani authentication token');
+        }
+
+        const response = await fetch(finalAudioUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch audio: ${response.status}`);
+        }
+
+        const audioBuffer = await response.arrayBuffer();
+        // Convert ArrayBuffer to base64 using btoa (browser-compatible)
+        const uint8Array = new Uint8Array(audioBuffer);
+        let binary = '';
+        uint8Array.forEach(byte => binary += String.fromCharCode(byte));
+        const audioBase64 = btoa(binary);
+        const contentType = response.headers.get('content-type') || 'audio/wav';
+        finalAudioUrl = `data:${contentType};base64,${audioBase64}`;
+
+        toast.dismiss("audio-loading");
+      }
+
+      // Create new audio element
+      const audio = new Audio(finalAudioUrl);
+      audio.volume = 0.8;
+
+      // Set proper MIME type if it's a data URL
+      if (finalAudioUrl.startsWith('data:')) {
+        // Extract MIME type from data URL
+        const mimeType = finalAudioUrl.split(';')[0].split(':')[1];
+        // Note: HTMLAudioElement doesn't have a 'type' property, but we can set it via setAttribute
+        audio.setAttribute('type', mimeType);
+      }
+
+    audio.onplay = () => {
+      setPlayingAudioIndex(messageIndex);
+      setAudioElement(audio);
+      toast.success("Playing Vaani audio...", {
+        duration: 1500,
+        icon: '🎵'
+      });
+    };
+
+    audio.onended = () => {
+      setPlayingAudioIndex(null);
+      setAudioElement(null);
+      toast.success("Audio finished", {
         duration: 1000,
-        icon: '⏹️'
+        icon: '✅'
+      });
+    };
+
+    audio.onerror = (e) => {
+      console.error('Audio load error:', e);
+      setPlayingAudioIndex(null);
+      setAudioElement(null);
+      toast.error("Failed to load audio - unsupported format", {
+        duration: 3000,
+        icon: '❌'
+      });
+    };
+
+      audio.oncanplay = () => {
+        // Audio is ready to play
+        console.log('Audio ready to play');
+      };
+
+      audio.onloadeddata = () => {
+        console.log('Audio data loaded');
+      };
+
+      audio.onloadedmetadata = () => {
+        console.log('Audio metadata loaded, duration:', audio.duration);
+      };
+
+      // Try to play immediately, with fallback
+      audio.play().catch((error) => {
+        console.error('Audio play error:', error);
+        // If immediate play fails, try after loading
+        audio.addEventListener('canplay', () => {
+          audio.play().catch((retryError) => {
+            console.error('Audio retry play error:', retryError);
+            toast.error("Failed to play audio - unsupported format or codec", {
+              duration: 3000,
+              icon: '❌'
+            });
+          });
+        }, { once: true });
+      });
+    } catch (error) {
+      console.error('Error setting up audio:', error);
+      toast.error("Failed to load audio", {
+        duration: 3000,
+        icon: '❌'
+      });
+    }
+  };
+
+  const handleDownloadVaaniAudio = (audioUrl: string, messageIndex: number) => {
+    try {
+      // Create a temporary anchor element for download
+      const link = document.createElement('a');
+      link.href = audioUrl;
+      link.download = `vaani_audio_${messageIndex}_${Date.now()}.wav`;
+      link.target = '_blank';
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Audio download started", {
+        duration: 2000,
+        icon: '📥'
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error("Failed to download audio", {
+        duration: 2000,
+        icon: '❌'
       });
     }
   };
@@ -3532,6 +3755,25 @@ const ChatContainer: React.FC = () => {
                       onClick={() => handleCopyMessage(msg.text)}
                       title="Copy message"
                     />
+                    {/* Vaani Audio Controls */}
+                    {msg.vaani_audio && msg.vaani_audio.audio_url && (
+                      <div className="flex items-center space-x-1">
+                        <FontAwesomeIcon
+                          icon={playingAudioIndex === index ? faPause : faMusic}
+                          className="text-gray-400 hover:text-green-400 cursor-pointer transition-colors"
+                          style={{ fontSize: window.innerWidth < 640 ? '12px' : '14px' }}
+                          onClick={() => handlePlayVaaniAudio(msg.vaani_audio!.audio_url!, index)}
+                          title={playingAudioIndex === index ? "Pause Vaani audio" : "Play Vaani audio"}
+                        />
+                        <FontAwesomeIcon
+                          icon={faDownload}
+                          className="text-gray-400 hover:text-blue-400 cursor-pointer transition-colors"
+                          style={{ fontSize: window.innerWidth < 640 ? '12px' : '14px' }}
+                          onClick={() => handleDownloadVaaniAudio(msg.vaani_audio!.audio_url!, index)}
+                          title="Download Vaani audio"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               {msg.sender === "bot" && !msg.isLoading && Array.isArray(msg.retrieved_chunks) && msg.retrieved_chunks.length > 0 && (

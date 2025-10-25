@@ -173,7 +173,8 @@ export const sendChatRequest = async (
   chatbotId: string,
   userId: string,
   chatId?: string,
-  context?: ChatContextItem[]
+  context?: ChatContextItem[],
+  generateAudio?: boolean
 ) => {
   try {
     const response = await axios.post(`/chat/new`, {
@@ -181,7 +182,8 @@ export const sendChatRequest = async (
       chatbotId,
       userId,
       chatId, // Include chatId to specify which chat to send message to
-      context: context || []
+      context: context || [],
+      generateAudio: generateAudio || false
     });
     return response.data; // Ensure this returns the necessary data for your component
   } catch (error) {

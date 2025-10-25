@@ -9,7 +9,7 @@ import { getRagAnswer } from '../config/rag.js';
  */
 export const sendChatMessage = async (req, res) => {
   try {
-  const { message, chatbotId, userId, chatId, context } = req.body;
+   const { message, chatbotId, userId, chatId, context, generateAudio = false } = req.body;
 
     // Verify user owns this request
     if (userId !== req.user.id.toString()) {
@@ -93,7 +93,7 @@ export const sendChatMessage = async (req, res) => {
     // Call RAG API to get answer, passing context if provided
     let ragResponse;
     try {
-      ragResponse = await getRagAnswer(message.trim(), 5, context);
+      ragResponse = await getRagAnswer(message.trim(), 5, context, generateAudio);
     } catch (err) {
       console.error('RAG API error:', err);
       return res.status(500).json({
@@ -137,6 +137,7 @@ export const sendChatMessage = async (req, res) => {
       aiResponse: {
         content: lastBotMsg.content,
         metadata: lastBotMsg.metadata || {},
+        vaani_audio: ragResponse.vaani_audio || null, // Include audio if generated
       }
     });
   } catch (error) {

@@ -22,6 +22,7 @@ import mongoose from "mongoose";
 
 // Define the structure of a message
 export interface IMessage {
+    metadata: { retrieved_chunks: never[]; };
     sender: 'user' | 'guru';
     content: string;
     timestamp: Date;
