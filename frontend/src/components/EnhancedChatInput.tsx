@@ -141,6 +141,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [finalTranscript, setFinalTranscript] = useState('');
 
   // Initialize speech recognition
   useEffect(() => {
@@ -174,14 +175,21 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
           }
         }
 
-        setTranscript(finalTranscript || interimTranscript);
+        const currentTranscript = finalTranscript || interimTranscript;
+        setTranscript(currentTranscript);
+
+        // If we have a final result, store it
+        if (finalTranscript) {
+          setFinalTranscript(finalTranscript);
+        }
       };
 
       recognitionInstance.onend = () => {
         setIsListening(false);
-        if (transcript.trim()) {
+        const transcriptToUse = finalTranscript || transcript;
+        if (transcriptToUse.trim()) {
           // Append the transcript to the current message
-          const newMessage = message + (message ? ' ' : '') + transcript.trim();
+          const newMessage = message + (message ? ' ' : '') + transcriptToUse.trim();
           setMessage(newMessage);
           toast.success("Speech converted to text!", {
             duration: 2000,
@@ -189,6 +197,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
           });
         }
         setTranscript('');
+        setFinalTranscript('');
       };
 
       recognitionInstance.onerror = (event) => {
@@ -609,7 +618,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
             className={`w-full p-2 sm:p-3 bg-transparent text-white focus:outline-none resize-none transition-all duration-300 text-sm sm:text-base mobile-scroll ${
               showPlaceholder ? 'text-transparent' : 'text-white'
             }`}
-            value={message}
+            value={isListening && transcript ? message + transcript : message}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
@@ -640,6 +649,18 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
             onClick={handleCopyText}
             title={message.trim() ? "Copy text" : "No text to copy"}
           />
+          {isListening && (
+            <button
+              onClick={handleMicrophoneClick}
+              className="mx-1 sm:mx-2 cursor-pointer text-red-400 hover:text-red-300 transition-all duration-300 animate-pulse"
+              title="Stop listening"
+            >
+              <FontAwesomeIcon
+                icon={faTimes}
+                style={{ fontSize: window.innerWidth < 640 ? '14px' : '16px' }}
+              />
+            </button>
+          )}
           <FontAwesomeIcon
             icon={faMicrophone}
             className={`mx-1 sm:mx-2 cursor-pointer transition-all duration-300 ${
