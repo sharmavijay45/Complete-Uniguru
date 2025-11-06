@@ -140,7 +140,6 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   // Speech recognition functionality
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const [finalTranscript, setFinalTranscript] = useState('');
 
   // Initialize speech recognition
@@ -155,7 +154,6 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
 
       recognitionInstance.onstart = () => {
         setIsListening(true);
-        setTranscript('');
         setFinalTranscript('');
         toast.success("Listening... Speak now", {
           duration: 2000,
@@ -168,7 +166,6 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
         if (result.isFinal) {
           const speechText = result[0].transcript;
           setFinalTranscript(speechText);
-          setTranscript(speechText);
         }
       };
 
@@ -183,13 +180,11 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
             icon: '✨'
           });
         }
-        setTranscript('');
         setFinalTranscript('');
       };
 
       recognitionInstance.onerror = (event) => {
         setIsListening(false);
-        setTranscript('');
         setFinalTranscript('');
         console.error('Speech recognition error:', event.error);
 
