@@ -150,12 +150,13 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
       const recognitionInstance = new SpeechRecognition();
 
       recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = true;
+      recognitionInstance.interimResults = false; // Only get final results
       recognitionInstance.lang = 'en-US'; // Default language, could be made configurable
 
       recognitionInstance.onstart = () => {
         setIsListening(true);
         setTranscript('');
+        setFinalTranscript('');
         toast.success("Listening... Speak now", {
           duration: 2000,
           icon: '🎤'
@@ -163,33 +164,19 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
       };
 
       recognitionInstance.onresult = (event) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            finalTranscript += result[0].transcript;
-          } else {
-            interimTranscript += result[0].transcript;
-          }
-        }
-
-        const currentTranscript = finalTranscript || interimTranscript;
-        setTranscript(currentTranscript);
-
-        // If we have a final result, store it
-        if (finalTranscript) {
-          setFinalTranscript(finalTranscript);
+        const result = event.results[0];
+        if (result.isFinal) {
+          const speechText = result[0].transcript;
+          setFinalTranscript(speechText);
+          setTranscript(speechText);
         }
       };
 
       recognitionInstance.onend = () => {
         setIsListening(false);
-        const transcriptToUse = finalTranscript || transcript;
-        if (transcriptToUse.trim()) {
+        if (finalTranscript.trim()) {
           // Append the transcript to the current message
-          const newMessage = message + (message ? ' ' : '') + transcriptToUse.trim();
+          const newMessage = message + (message ? ' ' : '') + finalTranscript.trim();
           setMessage(newMessage);
           toast.success("Speech converted to text!", {
             duration: 2000,
@@ -203,6 +190,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
       recognitionInstance.onerror = (event) => {
         setIsListening(false);
         setTranscript('');
+        setFinalTranscript('');
         console.error('Speech recognition error:', event.error);
 
         let errorMessage = 'Speech recognition failed';
@@ -231,7 +219,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
 
       setRecognition(recognitionInstance);
     }
-  }, [message, transcript]);
+  }, []); // Remove dependencies that could cause re-initialization
 
   // Voice recording functionality (fallback for older browsers)
   const startRecording = async () => {
@@ -618,7 +606,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
             className={`w-full p-2 sm:p-3 bg-transparent text-white focus:outline-none resize-none transition-all duration-300 text-sm sm:text-base mobile-scroll ${
               showPlaceholder ? 'text-transparent' : 'text-white'
             }`}
-            value={isListening && transcript ? message + transcript : message}
+            value={message}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
