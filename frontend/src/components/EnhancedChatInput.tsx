@@ -142,96 +142,135 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [finalTranscript, setFinalTranscript] = useState('');
   const [showSpeechBadge, setShowSpeechBadge] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en-US');
 
   // Initialize speech recognition
   useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
+    const initSpeechRecognition = () => {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.warn('Speech recognition not supported in this browser');
+        return;
+      }
 
-      recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = false; // Only get final results
-      recognitionInstance.lang = 'en-US'; // Default language, could be made configurable
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognitionInstance = new SpeechRecognition();
 
-      recognitionInstance.onstart = () => {
-        setIsListening(true);
-        setFinalTranscript('');
-        toast.success("Listening... Speak now", {
-          duration: 2000,
-          icon: '🎤'
-        });
-      };
+        // Configure recognition settings
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
+        recognitionInstance.lang = currentLanguage;
 
-      recognitionInstance.onresult = (event) => {
-        const result = event.results[0];
-        if (result.isFinal) {
-          const speechText = result[0].transcript;
-          setFinalTranscript(speechText);
-        }
-      };
-
-      recognitionInstance.onend = () => {
-        setIsListening(false);
-        if (finalTranscript.trim()) {
-          // Append the transcript to the current message
-          const newMessage = message + (message ? ' ' : '') + finalTranscript.trim();
-          setMessage(newMessage);
-
-          // Show speech badge
-          setShowSpeechBadge(true);
-          setTimeout(() => setShowSpeechBadge(false), 3000);
-
-          toast.success(`🎤 "${finalTranscript.trim()}" - Speech converted to text!`, {
-            duration: 3000,
-            icon: '✅'
+        recognitionInstance.onstart = () => {
+          console.log('Speech recognition started');
+          setIsListening(true);
+          setFinalTranscript('');
+          toast.success("🎤 Listening... Speak clearly", {
+            duration: 2000,
+            icon: '🔴'
           });
-        }
-        setFinalTranscript('');
-      };
+        };
 
-      recognitionInstance.onerror = (event) => {
-        setIsListening(false);
-        setFinalTranscript('');
-        console.error('Speech recognition error:', event.error);
+        recognitionInstance.onresult = (event) => {
+          console.log('Speech recognition result:', event);
+          const result = event.results[0];
+          if (result && result.isFinal) {
+            const speechText = result[0].transcript.trim();
+            console.log('Final transcript:', speechText);
 
-        let errorMessage = 'Speech recognition failed';
-        switch (event.error) {
-          case 'no-speech':
-            errorMessage = 'No speech detected. Please try again.';
-            break;
-          case 'audio-capture':
-            errorMessage = 'No microphone found. Please check your microphone.';
-            break;
-          case 'not-allowed':
-            errorMessage = 'Microphone access denied. Please allow microphone access.';
-            break;
-          case 'network':
-            errorMessage = 'Network error. Please check your connection.';
-            break;
-          default:
-            errorMessage = `Speech recognition error: ${event.error}`;
-        }
+            if (speechText) {
+              setFinalTranscript(speechText);
 
-        toast.error(errorMessage, {
+              // Immediately update the message
+              const newMessage = message + (message ? ' ' : '') + speechText;
+              setMessage(newMessage);
+
+              // Show speech badge
+              setShowSpeechBadge(true);
+              setTimeout(() => setShowSpeechBadge(false), 3000);
+
+              toast.success(`✅ "${speechText}"`, {
+                duration: 3000,
+                icon: '🎤'
+              });
+            }
+          }
+        };
+
+        recognitionInstance.onend = () => {
+          console.log('Speech recognition ended');
+          setIsListening(false);
+        };
+
+        recognitionInstance.onerror = (event) => {
+          console.error('Speech recognition error:', event);
+          setIsListening(false);
+          setFinalTranscript('');
+
+          let errorMessage = 'Speech recognition failed';
+          switch (event.error) {
+            case 'no-speech':
+              errorMessage = 'No speech detected. Please speak louder or closer to the microphone.';
+              break;
+            case 'audio-capture':
+              errorMessage = 'No microphone found. Please check your microphone connection.';
+              break;
+            case 'not-allowed':
+              errorMessage = 'Microphone access denied. Please allow microphone access and try again.';
+              break;
+            case 'network':
+              errorMessage = 'Network error. Please check your internet connection.';
+              break;
+            case 'language-not-supported':
+              errorMessage = 'Selected language is not supported. Try English or Hindi.';
+              break;
+            case 'service-not-allowed':
+              errorMessage = 'Speech recognition service is not available.';
+              break;
+            default:
+              errorMessage = `Speech recognition error: ${event.error}`;
+          }
+
+          toast.error(errorMessage, {
+            duration: 5000,
+            icon: '❌'
+          });
+        };
+
+        setRecognition(recognitionInstance);
+      } catch (error) {
+        console.error('Failed to initialize speech recognition:', error);
+        toast.error('Speech recognition is not available in this browser', {
           duration: 4000,
-          icon: '❌'
+          icon: '⚠️'
         });
-      };
+      }
+    };
 
-      setRecognition(recognitionInstance);
-    }
-  }, []); // Remove dependencies that could cause re-initialization
+    initSpeechRecognition();
+  }, [currentLanguage]); // Re-initialize when language changes
 
   // Voice recording functionality (fallback for older browsers)
   const startRecording = async () => {
     // Check if speech recognition is available
     if (recognition) {
       try {
+        // Check if microphone permission is granted
+        const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        if (permissionStatus.state === 'denied') {
+          toast.error("Microphone access denied. Please allow microphone access in your browser settings.", {
+            duration: 5000,
+            icon: '❌'
+          });
+          return;
+        }
+
         recognition.start();
+        console.log('Started speech recognition with language:', currentLanguage);
       } catch (error) {
         console.error('Error starting speech recognition:', error);
-        toast.error("Could not start speech recognition", {
-          duration: 3000,
+        toast.error("Could not start speech recognition. Please try again.", {
+          duration: 4000,
           icon: '❌'
         });
       }
@@ -240,7 +279,13 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
 
     // Fallback to basic recording (for browsers without speech recognition)
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -267,8 +312,8 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
       });
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      toast.error("Could not access microphone", {
-        duration: 3000,
+      toast.error("Could not access microphone. Please check your microphone permissions.", {
+        duration: 4000,
         icon: '❌'
       });
     }
@@ -285,7 +330,12 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
     if (isListening) {
       // Stop speech recognition
       if (recognition) {
-        recognition.stop();
+        try {
+          recognition.stop();
+        } catch (error) {
+          console.error('Error stopping recognition:', error);
+          setIsListening(false);
+        }
       }
     } else if (isRecording) {
       // Stop basic recording
@@ -646,6 +696,21 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
             onClick={handleCopyText}
             title={message.trim() ? "Copy text" : "No text to copy"}
           />
+
+          {/* Language selector for speech */}
+          {recognition && (
+            <select
+              value={currentLanguage}
+              onChange={(e) => setCurrentLanguage(e.target.value)}
+              className="mx-1 sm:mx-2 bg-gray-700/50 text-white text-xs px-2 py-1 rounded border border-gray-600/50 focus:outline-none focus:ring-1 focus:ring-purple-400"
+              title="Select speech recognition language"
+            >
+              <option value="en-US">🇺🇸 EN</option>
+              <option value="hi-IN">🇮🇳 HI</option>
+              <option value="mr-IN">🇮🇳 MR</option>
+            </select>
+          )}
+
           {isListening && (
             <button
               onClick={handleMicrophoneClick}
@@ -674,7 +739,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
                 : isRecording
                 ? "Recording... Click to stop"
                 : recognition
-                ? "Start voice-to-text"
+                ? `Start voice-to-text (${currentLanguage === 'hi-IN' ? 'Hindi' : currentLanguage === 'mr-IN' ? 'Marathi' : 'English'})`
                 : "Start voice recording (speech-to-text not supported)"
             }
             onClick={handleMicrophoneClick}
