@@ -141,6 +141,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [finalTranscript, setFinalTranscript] = useState('');
+  const [showSpeechBadge, setShowSpeechBadge] = useState(false);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -175,9 +176,14 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
           // Append the transcript to the current message
           const newMessage = message + (message ? ' ' : '') + finalTranscript.trim();
           setMessage(newMessage);
-          toast.success("Speech converted to text!", {
-            duration: 2000,
-            icon: '✨'
+
+          // Show speech badge
+          setShowSpeechBadge(true);
+          setTimeout(() => setShowSpeechBadge(false), 3000);
+
+          toast.success(`🎤 "${finalTranscript.trim()}" - Speech converted to text!`, {
+            duration: 3000,
+            icon: '✅'
           });
         }
         setFinalTranscript('');
@@ -583,6 +589,14 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
 
         {/* Text input area */}
         <div className="flex-1 relative">
+          {/* Speech badge */}
+          {showSpeechBadge && (
+            <div className="absolute right-3 top-2 z-10 bg-green-500/90 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 animate-fade-in">
+              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+              <span>Speech → Text</span>
+            </div>
+          )}
+
           {showPlaceholder && (
             <span
               ref={placeholderRef}
