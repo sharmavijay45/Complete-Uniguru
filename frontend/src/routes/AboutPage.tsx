@@ -5,12 +5,28 @@ import { useAuth } from "../context/AuthContext";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import uniguru from "../assets/uni-logo.png";
 import i18n from "../i18n";
+import { useState, useEffect } from "react";
 // import StarsCanvas from "../components/StarBackground";
 
 const AboutPage = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
-  const L = (en: string, hi: string, mr: string) => (i18n.language === 'hi' ? hi : i18n.language === 'mr' ? mr : en);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+
+  const L = (en: string, hi: string, mr: string) => (currentLanguage === 'hi' ? hi : currentLanguage === 'mr' ? mr : en);
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      setCurrentLanguage(lng);
+    };
+
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, []);
 
   return (
     <div className="relative min-h-screen text-white">
@@ -26,6 +42,43 @@ const AboutPage = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
+        {/* Language Selector */}
+        <div className="flex justify-end mb-6">
+          <div className="flex items-center gap-2 bg-gray-900/50 backdrop-blur-sm rounded-lg p-2 border border-gray-700">
+            <span className="text-sm text-gray-300 mr-2">{L('Language:', 'भाषा:', 'भाषा:')}</span>
+            <button
+              onClick={() => i18n.changeLanguage('en')}
+              className={`px-3 py-1 text-sm rounded-md transition-all duration-200 ${
+                currentLanguage === 'en'
+                  ? 'bg-yellow-500 text-black font-medium'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('hi')}
+              className={`px-3 py-1 text-sm rounded-md transition-all duration-200 ${
+                currentLanguage === 'hi'
+                  ? 'bg-yellow-500 text-black font-medium'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              हिंदी
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('mr')}
+              className={`px-3 py-1 text-sm rounded-md transition-all duration-200 ${
+                currentLanguage === 'mr'
+                  ? 'bg-yellow-500 text-black font-medium'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+              }`}
+            >
+              मराठी
+            </button>
+          </div>
+        </div>
+
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">

@@ -15,6 +15,42 @@ import { gsap } from "gsap";
 import BubblyButton from "./BubblyButton";
 import toast from "react-hot-toast";
 
+// Web Speech API type declarations
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message?: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+declare var SpeechRecognition: {
+  prototype: SpeechRecognition;
+  new(): SpeechRecognition;
+};
+
 interface FileAttachment {
   id: string;
   file: File;
@@ -101,8 +137,110 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
     event.target.value = '';
   };
 
-  // Voice recording functionality
+  // Speech recognition functionality
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = 'en-US'; // Default language, could be made configurable
+
+      recognitionInstance.onstart = () => {
+        setIsListening(true);
+        setTranscript('');
+        toast.success("Listening... Speak now", {
+          duration: 2000,
+          icon: '🎤'
+        });
+      };
+
+      recognitionInstance.onresult = (event) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalTranscript += result[0].transcript;
+          } else {
+            interimTranscript += result[0].transcript;
+          }
+        }
+
+        setTranscript(finalTranscript || interimTranscript);
+      };
+
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+        if (transcript.trim()) {
+          // Append the transcript to the current message
+          const newMessage = message + (message ? ' ' : '') + transcript.trim();
+          setMessage(newMessage);
+          toast.success("Speech converted to text!", {
+            duration: 2000,
+            icon: '✨'
+          });
+        }
+        setTranscript('');
+      };
+
+      recognitionInstance.onerror = (event) => {
+        setIsListening(false);
+        setTranscript('');
+        console.error('Speech recognition error:', event.error);
+
+        let errorMessage = 'Speech recognition failed';
+        switch (event.error) {
+          case 'no-speech':
+            errorMessage = 'No speech detected. Please try again.';
+            break;
+          case 'audio-capture':
+            errorMessage = 'No microphone found. Please check your microphone.';
+            break;
+          case 'not-allowed':
+            errorMessage = 'Microphone access denied. Please allow microphone access.';
+            break;
+          case 'network':
+            errorMessage = 'Network error. Please check your connection.';
+            break;
+          default:
+            errorMessage = `Speech recognition error: ${event.error}`;
+        }
+
+        toast.error(errorMessage, {
+          duration: 4000,
+          icon: '❌'
+        });
+      };
+
+      setRecognition(recognitionInstance);
+    }
+  }, [message, transcript]);
+
+  // Voice recording functionality (fallback for older browsers)
   const startRecording = async () => {
+    // Check if speech recognition is available
+    if (recognition) {
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        toast.error("Could not start speech recognition", {
+          duration: 3000,
+          icon: '❌'
+        });
+      }
+      return;
+    }
+
+    // Fallback to basic recording (for browsers without speech recognition)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -114,10 +252,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
       };
 
       mediaRecorder.onstop = () => {
-        // const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        // Here you could implement speech-to-text conversion
-        // For now, we'll just show a message
-        toast.success("Voice recording completed! (Speech-to-text coming soon)", {
+        toast.success("Voice recording completed! (Speech-to-text requires a compatible browser)", {
           duration: 3000,
           icon: '🎤'
         });
@@ -128,7 +263,7 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
 
       mediaRecorder.start();
       setIsRecording(true);
-      toast.success("Recording started...", {
+      toast.success("Recording started... (Basic recording - speech-to-text not available)", {
         duration: 2000,
         icon: '🎤'
       });
@@ -149,9 +284,16 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
   };
 
   const handleMicrophoneClick = () => {
-    if (isRecording) {
+    if (isListening) {
+      // Stop speech recognition
+      if (recognition) {
+        recognition.stop();
+      }
+    } else if (isRecording) {
+      // Stop basic recording
       stopRecording();
     } else {
+      // Start speech recognition or fallback recording
       startRecording();
     }
   };
@@ -501,12 +643,22 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
           <FontAwesomeIcon
             icon={faMicrophone}
             className={`mx-1 sm:mx-2 cursor-pointer transition-all duration-300 ${
-              isRecording
+              isListening
+                ? 'text-green-400 hover:text-green-300 animate-pulse'
+                : isRecording
                 ? 'text-red-400 hover:text-red-300 animate-pulse'
                 : 'text-white/80 hover:text-white'
             }`}
             style={{ fontSize: window.innerWidth < 640 ? '14px' : '16px' }}
-            title={isRecording ? "Stop recording" : "Start voice recording"}
+            title={
+              isListening
+                ? "Listening... Click to stop"
+                : isRecording
+                ? "Recording... Click to stop"
+                : recognition
+                ? "Start voice-to-text"
+                : "Start voice recording (speech-to-text not supported)"
+            }
             onClick={handleMicrophoneClick}
           />
           <button
@@ -550,9 +702,15 @@ const EnhancedChatInput: React.FC<EnhancedChatInputProps> = ({
         />
       </BubblyButton>
 
-      {/* Typing indicator and stats */}
+      {/* Voice listening indicator and typing/stats */}
       <div className="absolute -top-6 sm:-top-8 left-2 sm:left-4 right-2 sm:right-4 flex justify-between items-center">
-        {isTyping && (
+        {isListening && (
+          <div className="flex items-center gap-2 text-green-400 animate-pulse">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+            <span className="text-xs font-medium">Listening...</span>
+          </div>
+        )}
+        {isTyping && !isListening && (
           <div className="text-xs text-white/70 animate-pulse">
             Typing...
           </div>

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniGuru API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .section h3 {
+            color: #34495e;
+            margin: 25px 0 15px 0;
+            font-size: 1.4em;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+
+        .endpoint {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+
+        .method.GET { background: #28a745; color: white; }
+        .method.POST { background: #007bff; color: white; }
+        .method.PUT { background: #ffc107; color: black; }
+        .method.DELETE { background: #dc3545; color: white; }
+
+        .url {
+            font-family: 'Courier New', monospace;
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: block;
+            word-break: break-all;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid #4a5568;
+        }
+
+        .copy-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #f39c12;
+        }
+
+        .warning {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .param-table th,
+        .param-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .param-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .optional {
+            color: #6c757d;
+        }
+
+        .toc {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .toc h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .toc a {
+            color: #3498db;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: #2980b9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .code-block {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 UniGuru API Documentation</h1>
+            <p>Complete API reference for UniGuru Backend & Vaani LM Service</p>
+        </div>
+
+        <div class="toc">
+            <h3>📋 Table of Contents</h3>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#authentication">Authentication</a></li>
+                <li><a href="#user-management">User Management</a></li>
+                <li><a href="#guru-management">Guru Management</a></li>
+                <li><a href="#chat-system">Chat System</a></li>
+                <li><a href="#feature-tools">Feature Tools</a></li>
+                <li><a href="#vaani-service">Vaani LM Service</a></li>
+                <li><a href="#testing">Testing with Postman</a></li>
+            </ul>
+        </div>
+
+        <div id="overview" class="section">
+            <h2>📖 Overview</h2>
+            <p>UniGuru is an AI-powered chatbot platform with RAG (Retrieval-Augmented Generation) capabilities and integrated voice features through the Vaani LM service.</p>
+
+            <div class="note">
+                <strong>Base URLs:</strong><br>
+                • UniGuru Backend: <code>https://complete-uniguru.onrender.com</code><br>
+                • Vaani LM Service: <code>https://vaani-sentinel-gs6x.onrender.com</code>
+            </div>
+
+            <h3>🔑 Authentication</h3>
+            <p>Most endpoints require JWT authentication. Include the token in the Authorization header:</p>
+            <div class="code-block">Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw</div>
+        </div>
+
+        <div id="authentication" class="section">
+            <h2>🔐 Authentication</h2>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Register User</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/auth/register</div>
+                <p>Create a new user account</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/auth/register' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123"
+  }'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Login User</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/auth/login</div>
+                <p>Authenticate user and get JWT token</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "email": "john@example.com",
+  "password": "password123"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/auth/login' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "email": "john@example.com",
+    "password": "password123"
+  }'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method GET">GET</span>
+                <strong>Get User Profile</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/auth/me</div>
+                <p>Get current authenticated user information</p>
+
+                <button class="copy-btn" data-copy="curl -X GET 'https://complete-uniguru.onrender.com/api/v1/auth/me' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'">Copy cURL</button>
+            </div>
+        </div>
+
+        <div id="user-management" class="section">
+            <h2>👤 User Management</h2>
+
+            <div class="endpoint">
+                <span class="method GET">GET</span>
+                <strong>Get Auth Status</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/user/auth-status</div>
+                <p>Check if user is authenticated</p>
+
+                <button class="copy-btn" data-copy="curl -X GET 'https://complete-uniguru.onrender.com/api/v1/user/auth-status' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method PUT">PUT</span>
+                <strong>Update User Profile</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/user/update</div>
+                <p>Update user information</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "name": "Updated Name",
+  "email": "newemail@example.com"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X PUT 'https://complete-uniguru.onrender.com/api/v1/user/update' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "name": "Updated Name",
+    "email": "newemail@example.com"
+  }'">Copy cURL</button>
+            </div>
+        </div>
+
+        <div id="guru-management" class="section">
+            <h2>🧙 Guru Management</h2>
+
+            <div class="endpoint">
+                <span class="method GET">GET</span>
+                <strong>Get User Gurus</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/guru/g-g</div>
+                <p>Get all gurus for the authenticated user</p>
+
+                <button class="copy-btn" data-copy="curl -X GET 'https://complete-uniguru.onrender.com/api/v1/guru/g-g' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Create New Guru</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/guru/n-g/YOUR_USER_ID</div>
+                <p>Create a basic guru with default settings</p>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/guru/n-g/YOUR_USER_ID' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Create Custom Guru</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/guru/custom-guru/YOUR_USER_ID</div>
+                <p>Create a custom guru with specific settings</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "name": "Science Guru",
+  "subject": "Physics",
+  "description": "Expert in quantum physics and relativity"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/guru/custom-guru/YOUR_USER_ID' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "name": "Science Guru",
+    "subject": "Physics",
+    "description": "Expert in quantum physics and relativity"
+  }'">Copy cURL</button>
+            </div>
+        </div>
+
+        <div id="chat-system" class="section">
+            <h2>💬 Chat System</h2>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Send Chat Message</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/chat/new</div>
+                <p>Send a message to a guru and get AI response</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "message": "Explain quantum physics",
+  "chatbotId": "GURU_ID_HERE",
+  "userId": "YOUR_USER_ID",
+  "generateAudio": true
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/chat/new' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "message": "Explain quantum physics",
+    "chatbotId": "GURU_ID_HERE",
+    "userId": "YOUR_USER_ID",
+    "generateAudio": true
+  }'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method GET">GET</span>
+                <strong>Get User Chats</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/chat/list</div>
+                <p>Get all chats for the authenticated user</p>
+
+                <button class="copy-btn" data-copy="curl -X GET 'https://complete-uniguru.onrender.com/api/v1/chat/list' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Create New Chat</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/chat/create</div>
+                <p>Create a new chat session with a guru</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "guruId": "GURU_ID_HERE",
+  "title": "My Physics Discussion"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/chat/create'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'
+  -H 'Content-Type: application/json'
+  -d '{
+    "guruId": "GURU_ID_HERE",
+    "title": "My Physics Discussion"
+  }'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Generate Audio for Chat Message</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/chat/audio</div>
+                <p>Generate audio response for a chat message using Vaani LM service</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "message": "Explain quantum physics in simple terms",
+  "chatbotId": "GURU_ID_HERE",
+  "userId": "YOUR_USER_ID",
+  "voice": "en_us_female_conversational",
+  "language": "en"
+}</div>
+
+                <h4>Response:</h4>
+                <div class="code-block">{
+  "success": true,
+  "audioUrl": "https://vaani-sentinel-gs6x.onrender.com/audio/generated_audio.mp3",
+  "text": "Quantum physics is the study of matter and energy at the smallest scales...",
+  "metadata": {
+    "voice": "en_us_female_conversational",
+    "language": "en",
+    "duration": 15.2
+  }
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/chat/audio'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'
+  -H 'Content-Type: application/json'
+  -d '{
+    "message": "Explain quantum physics in simple terms",
+    "chatbotId": "GURU_ID_HERE",
+    "userId": "YOUR_USER_ID",
+    "voice": "en_us_female_conversational",
+    "language": "en"
+  }'">Copy cURL</button>
+            </div>
+        </div>
+
+        <div id="feature-tools" class="section">
+            <h2>🛠️ Feature Tools</h2>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Read PDF Content</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/feature/pdf/r</div>
+                <p>Extract text content from PDF files</p>
+
+                <h4>Content-Type: multipart/form-data</h4>
+                <div class="code-block">Form Data:
+- pdf: [PDF_FILE]</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/feature/pdf/r' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -F 'pdf=@/path/to/your/file.pdf'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Scan Image Text (OCR)</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/feature/image/s</div>
+                <p>Extract text from images using OCR</p>
+
+                <h4>Content-Type: multipart/form-data</h4>
+                <div class="code-block">Form Data:
+- image: [IMAGE_FILE]</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://complete-uniguru.onrender.com/api/v1/feature/image/s' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -F 'image=@/path/to/your/image.jpg'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method GET">GET</span>
+                <strong>Get Available Tools</strong>
+                <div class="url">https://complete-uniguru.onrender.com/api/v1/feature/tools</div>
+                <p>Get list of all available feature tools</p>
+
+                <button class="copy-btn" data-copy="curl -X GET 'https://complete-uniguru.onrender.com/api/v1/feature/tools' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw'">Copy cURL</button>
+            </div>
+        </div>
+
+        <div id="vaani-service" class="section">
+            <h2>🎵 Vaani LM Service</h2>
+            <p>The Vaani service provides advanced AI capabilities including text-to-speech generation.</p>
+
+            <div class="warning">
+                <strong>Note:</strong> Vaani service endpoints require separate authentication. Use the login endpoint first to get a token.
+            </div>
+
+            <h3>🔐 Vaani Authentication</h3>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Vaani Login</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/auth/login</div>
+                <p>Authenticate with Vaani service</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "username": "admin",
+  "password": "secret"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/auth/login' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "username": "admin",
+    "password": "secret"
+  }'">Copy cURL</button>
+            </div>
+
+            <h3>🤖 AI Content Generation</h3>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Generate TTS Audio</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/tts</div>
+                <p>Generate text-to-speech audio with intelligent caching</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "text": "Hello, this is a test message for TTS generation.",
+  "voice": "en_us_female_conversational",
+  "language": "en"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/tts' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "text": "Hello, this is a test message for TTS generation.",
+    "voice": "en_us_female_conversational",
+    "language": "en"
+  }'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Generate Platform Content</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/generate-content</div>
+                <p>Generate platform-specific content from existing content</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "content_id": "CONTENT_ID_HERE",
+  "platforms": ["twitter", "instagram", "linkedin"],
+  "tone": "uplifting",
+  "language": "en"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/generate-content' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "content_id": "CONTENT_ID_HERE",
+    "platforms": ["twitter", "instagram", "linkedin"],
+    "tone": "uplifting",
+    "language": "en"
+  }'">Copy cURL</button>
+            </div>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Generate Voice Content</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/generate-voice</div>
+                <p>Generate voice scripts for audio content</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "content_id": "CONTENT_ID_HERE",
+  "language": "hi",
+  "tone": "devotional",
+  "voice_tag": "hi_in_female_devotional"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/generate-voice' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "content_id": "CONTENT_ID_HERE",
+    "language": "hi",
+    "tone": "devotional",
+    "voice_tag": "hi_in_female_devotional"
+  }'">Copy cURL</button>
+            </div>
+
+            <h3>🌍 Multilingual Processing</h3>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Translate Content</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/multilingual/translate</div>
+                <p>Translate content to specified languages</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "content_id": "CONTENT_ID_HERE",
+  "target_languages": ["hi", "sa"],
+  "tone": "devotional"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/multilingual/translate' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "content_id": "CONTENT_ID_HERE",
+    "target_languages": ["hi", "sa"],
+    "tone": "devotional"
+  }'">Copy cURL</button>
+            </div>
+
+            <h3>📊 Analytics</h3>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Generate Engagement Metrics</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/analytics/generate-engagement</div>
+                <p>Generate simulated engagement metrics for content</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "post_id": "post-12345",
+  "platform": "twitter",
+  "content_type": "inspirational",
+  "language": "en",
+  "posting_time": "2024-01-01T12:00:00Z"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/analytics/generate-engagement' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "post_id": "post-12345",
+    "platform": "twitter",
+    "content_type": "inspirational",
+    "language": "en",
+    "posting_time": "2024-01-01T12:00:00Z"
+  }'">Copy cURL</button>
+            </div>
+
+            <h3>🔒 Security</h3>
+
+            <div class="endpoint">
+                <span class="method POST">POST</span>
+                <strong>Analyze Content Security</strong>
+                <div class="url">https://vaani-sentinel-gs6x.onrender.com/api/v1/security/analyze-content</div>
+                <p>Analyze content for security risks</p>
+
+                <h4>Request Body:</h4>
+                <div class="code-block">{
+  "content_id": "CONTENT_ID_HERE"
+}</div>
+
+                <button class="copy-btn" data-copy="curl -X POST 'https://vaani-sentinel-gs6x.onrender.com/api/v1/security/analyze-content' 
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw' 
+  -H 'Content-Type: application/json' 
+  -d '{
+    "content_id": "CONTENT_ID_HERE"
+  }'">Copy cURL</button>
+            </div>
+        </div>
+
+        <div id="testing" class="section">
+            <h2>🧪 Testing with Postman</h2>
+
+            <h3>Step-by-Step Guide</h3>
+            <ol>
+                <li><strong>Import to Postman:</strong> Copy any cURL command and use "Import" → "Raw text" in Postman</li>
+                <li><strong>Get UniGuru Token:</strong> First run the login endpoint to get your JWT token</li>
+                <li><strong>Get Vaani Token:</strong> Login to Vaani service separately to get its JWT token</li>
+                <li><strong>Set Authorization:</strong> Add "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc2NDc1MTI5NH0.AyPO0qrrSaApD1HfxK10MYygqZgzijMzrllxGUxMxVw" to headers</li>
+                <li><strong>Test Endpoints:</strong> Start with health checks, then authentication, then other endpoints</li>
+            </ol>
+
+            <div class="success">
+                <strong>Quick Start Example:</strong><br>
+                1. Login to UniGuru: <code>POST /api/v1/auth/login</code><br>
+                2. Login to Vaani: <code>POST https://vaani-sentinel-gs6x.onrender.com/api/v1/auth/login</code><br>
+                3. Create a guru: <code>POST /api/v1/guru/custom-guru/YOUR_USER_ID</code><br>
+                4. Send a chat message: <code>POST /api/v1/chat/new</code><br>
+                5. Generate TTS audio: <code>POST https://vaani-sentinel-gs6x.onrender.com/api/v1/agents/tts</code>
+            </div>
+
+            <h3>Common Response Codes</h3>
+            <table class="param-table">
+                <tr>
+                    <th>Code</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>200</td>
+                    <td>Success - Request completed successfully</td>
+                </tr>
+                <tr>
+                    <td>400</td>
+                    <td>Bad Request - Invalid input data</td>
+                </tr>
+                <tr>
+                    <td>401</td>
+                    <td>Unauthorized - Invalid or missing JWT token</td>
+                </tr>
+                <tr>
+                    <td>403</td>
+                    <td>Forbidden - Access denied</td>
+                </tr>
+                <tr>
+                    <td>404</td>
+                    <td>Not Found - Resource doesn't exist</td>
+                </tr>
+                <tr>
+                    <td>500</td>
+                    <td>Internal Server Error - Server-side issue</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(btn, text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showFeedback(btn);
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                    fallbackCopy(text, btn);
+                });
+            } else {
+                fallbackCopy(text, btn);
+            }
+        }
+
+        function fallbackCopy(text, btn) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showFeedback(btn);
+            } catch (err) {
+                console.error('Fallback copy failed: ', err);
+                alert('Copy to clipboard failed. Please copy the command manually.');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showFeedback(btn) {
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.style.background = '#28a745';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '#3498db';
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const text = this.getAttribute('data-copy');
+                    if (text) {
+                        copyToClipboard(this, text);
+                    }
+                });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
